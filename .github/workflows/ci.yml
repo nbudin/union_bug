@@ -51,3 +51,22 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy
       - run: cargo clippy --workspace -- -D warnings
+
+  update-release-draft:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
+    needs:
+      - check
+      - test
+      - fmt
+      - clippy
+    outputs:
+      name: ${{ steps.release-drafter.outputs.name }}
+      html_url: ${{ steps.release-drafter.outputs.html_url }}
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        id: release-drafter
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
