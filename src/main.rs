@@ -1,7 +1,28 @@
+mod assets;
+
+use std::{
+    io::{Cursor, Read},
+    net::SocketAddr,
+};
+
+use assets::get_image;
+use axum::{
+    extract::{DefaultBodyLimit, Multipart},
+    http::{HeaderMap, HeaderValue},
+    response::{Html, IntoResponse},
+    routing::{get, post},
+    Router,
+};
+use axum_macros::debug_handler;
 use image::{
     imageops::{self, FilterType},
-    DynamicImage, ImageError, ImageFormat,
+    DynamicImage, EncodableLayout, ImageFormat,
 };
+use serde::Deserialize;
+use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
+use tracing::debug;
+
+use crate::assets::ImageAssetIdentity;
 
 fn resize_crop(img: DynamicImage, width: u32, height: u32) -> DynamicImage {
     let mut img = img.resize_to_fill(width, height, FilterType::Lanczos3);
@@ -28,31 +49,70 @@ fn overlay_frame(
     img
 }
 
-fn load_and_composite(
-    image_path: &str,
-    overlay_path: &str,
-    width: u32,
-    height: u32,
-) -> Result<DynamicImage, ImageError> {
-    println!("Loading background image");
-    let img = image::open(image_path)?;
-    println!("Loading overlay");
-    let overlay = image::open(overlay_path)?;
-
-    let img = overlay_frame(&img, &overlay, width, height);
-    Ok(img)
+async fn root() -> impl IntoResponse {
+    Html(include_str!("./index.html"))
 }
 
-fn main() {
-    let img = load_and_composite(
-        std::env::args().nth(1).unwrap().as_str(),
-        std::env::args().nth(2).unwrap().as_str(),
-        1024,
-        1024,
-    )
-    .unwrap();
+#[derive(Deserialize)]
+struct CompositeInput {}
 
-    println!("Saving PNG");
-    img.save_with_format("./result.png", ImageFormat::Png)
+#[debug_handler]
+async fn composite(mut multipart: Multipart) -> impl IntoResponse {
+    let mut img: Option<DynamicImage> = None;
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let name = field.name().unwrap().to_string();
+        if name == "image" {
+            debug!("Decoding uploaded image");
+            let format = match field.content_type() {
+                Some("image/png") => Some(ImageFormat::Png),
+                _ => None,
+            };
+
+            let data = field.bytes().await.unwrap();
+
+            if let Some(format) = format {
+                img = Some(image::load_from_memory_with_format(data.as_bytes(), format).unwrap());
+            } else {
+                img = Some(image::load_from_memory(data.as_bytes()).unwrap());
+            }
+        }
+    }
+
+    if let Some(img) = img.as_ref() {
+        let overlay = get_image(ImageAssetIdentity::ABTWUTopLeftTemplate);
+
+        let result = overlay_frame(img, overlay, 1024, 1024);
+        let bytes: Vec<u8> = Vec::with_capacity(1024 * 1024); // 1MB will probably fit most images
+        let mut cursor = Cursor::new(bytes);
+        result.write_to(&mut cursor, ImageFormat::Png).unwrap();
+
+        cursor.set_position(0);
+        let iter = cursor.bytes().map(|r| r.unwrap());
+        let body = axum::body::Bytes::from_iter(iter);
+        let mut headers = HeaderMap::new();
+        headers.append("Content-Type", HeaderValue::from_str("image/png").unwrap());
+        Ok((headers, body))
+    } else {
+        Err("No image found in request".to_string())
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    // initialize tracing
+    tracing_subscriber::fmt::init();
+
+    let app = Router::new()
+        .route("/", get(root))
+        .route("/composite", post(composite))
+        .layer(CatchPanicLayer::new())
+        .layer(TraceLayer::new_for_http())
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 20)); // increase the size to 20MB
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3928));
+    tracing::debug!("listening on {}", addr);
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
         .unwrap();
 }
