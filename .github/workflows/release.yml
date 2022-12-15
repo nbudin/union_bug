@@ -18,6 +18,7 @@ jobs:
         context: .
         push: true
         platforms: linux/amd64
-        target: production
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         tags: |
           ghcr.io/nbudin/union_bug:${{ github.event.release.name }}
