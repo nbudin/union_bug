@@ -1,0 +1,53 @@
+on: [push, pull_request]
+
+name: Continuous integration
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@nextest
+      - run: cargo nextest run --workspace --profile ci
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
+        if: always() # always run even if the previous step fails
+        with:
+          check_name: 'Test Report'
+          report_paths: 'target/nextest/ci/junit.xml'
+
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: rustup component add rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: rustup component add clippy
+      - run: cargo clippy --workspace -- -D warnings
