@@ -7,10 +7,11 @@ use std::{
 
 use assets::get_image;
 use axum::{
+    body::Body,
     extract::{DefaultBodyLimit, Multipart},
-    http::{HeaderMap, HeaderValue},
-    response::{Html, IntoResponse},
-    routing::{get, post},
+    http::{HeaderMap, HeaderValue, Request, Uri},
+    response::IntoResponse,
+    routing::post,
     Router,
 };
 use axum_macros::debug_handler;
@@ -47,10 +48,6 @@ fn overlay_frame(
     imageops::overlay(&mut img, &overlay, 0, 0);
 
     img
-}
-
-async fn root() -> impl IntoResponse {
-    Html(include_str!("./index.html"))
 }
 
 #[derive(Deserialize)]
@@ -97,6 +94,16 @@ async fn composite(mut multipart: Multipart) -> impl IntoResponse {
     }
 }
 
+async fn serve_frontend(uri: Uri) -> impl IntoResponse {
+    let path = uri.path();
+    let req = Request::builder()
+        .uri(format!("http://localhost:3929{}", path))
+        .body(Body::empty())
+        .unwrap();
+    let client = hyper::Client::new();
+    client.request(req).await.unwrap()
+}
+
 async fn shutdown_signal() {
     tokio::signal::ctrl_c()
         .await
@@ -110,8 +117,8 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let app = Router::new()
-        .route("/", get(root))
         .route("/composite", post(composite))
+        .fallback(serve_frontend)
         .layer(CatchPanicLayer::new())
         .layer(TraceLayer::new_for_http())
         .layer(DefaultBodyLimit::max(1024 * 1024 * 20)); // increase the size to 20MB
