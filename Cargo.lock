@@ -1452,6 +1452,7 @@ dependencies = [
  "axum",
  "axum-macros",
  "futures",
+ "hyper",
  "image",
  "once_cell",
  "serde",
