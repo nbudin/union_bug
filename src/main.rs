@@ -20,7 +20,7 @@ use image::{
 };
 use serde::Deserialize;
 use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
-use tracing::debug;
+use tracing::{debug, info};
 
 use crate::assets::ImageAssetIdentity;
 
@@ -97,6 +97,13 @@ async fn composite(mut multipart: Multipart) -> impl IntoResponse {
     }
 }
 
+async fn shutdown_signal() {
+    tokio::signal::ctrl_c()
+        .await
+        .expect("Expect shutdown signal handler");
+    info!("Shutting down server");
+}
+
 #[tokio::main]
 async fn main() {
     // initialize tracing
@@ -109,10 +116,11 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .layer(DefaultBodyLimit::max(1024 * 1024 * 20)); // increase the size to 20MB
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3928));
-    tracing::debug!("listening on {}", addr);
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3928));
+    info!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 }
