@@ -1,0 +1,40 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'union_bug'",
+      "cargo": {
+        "args": ["build", "--bin=union_bug", "--package=union_bug"],
+        "filter": {
+          "name": "union_bug",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "env": {
+        "RUST_LOG": "debug",
+        "WEBPACK_DEV_SERVER": "1"
+      },
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'union_bug'",
+      "cargo": {
+        "args": ["test", "--no-run", "--bin=union_bug", "--package=union_bug"],
+        "filter": {
+          "name": "union_bug",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
