@@ -24,3 +24,4 @@ jobs:
         cache-to: type=gha,mode=max
         tags: |
           ghcr.io/nbudin/union_bug:${{ github.event.release.name }}
+          ghcr.io/nbudin/union_bug:latest
