@@ -2,7 +2,7 @@
 /.config
 /.github
 /result.png
-/public/.gitkeep
+/public
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
