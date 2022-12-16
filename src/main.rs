@@ -7,23 +7,27 @@ use std::{
 
 use assets::get_image;
 use axum::{
-    body::Body,
+    body::{self, Body, Empty, Full},
     extract::{DefaultBodyLimit, Multipart},
     http::{HeaderMap, HeaderValue, Request, Uri},
-    response::IntoResponse,
-    routing::post,
+    response::{IntoResponse, Response},
+    routing::{get, post},
     Router,
 };
 use axum_macros::debug_handler;
+use hyper::{header, StatusCode};
 use image::{
     imageops::{self, FilterType},
     DynamicImage, EncodableLayout, ImageFormat,
 };
+use include_dir::{include_dir, Dir};
 use serde::Deserialize;
-use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
+use tower_http::{catch_panic::CatchPanicLayer, compression::CompressionLayer, trace::TraceLayer};
 use tracing::{debug, info};
 
 use crate::assets::ImageAssetIdentity;
+
+static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/public");
 
 fn resize_crop(img: DynamicImage, width: u32, height: u32) -> DynamicImage {
     let mut img = img.resize_to_fill(width, height, FilterType::Lanczos3);
@@ -38,13 +42,13 @@ fn overlay_frame(
     width: u32,
     height: u32,
 ) -> DynamicImage {
-    println!("Resizing background image");
+    debug!("Resizing background image");
     let mut img = resize_crop(img.clone(), width, height);
 
-    println!("Resizing overlay");
+    debug!("Resizing overlay");
     let overlay = resize_crop(overlay.clone(), width, height);
 
-    println!("Compositing images");
+    debug!("Compositing images");
     imageops::overlay(&mut img, &overlay, 0, 0);
 
     img
@@ -94,14 +98,48 @@ async fn composite(mut multipart: Multipart) -> impl IntoResponse {
     }
 }
 
-async fn serve_frontend(uri: Uri) -> impl IntoResponse {
-    let path = uri.path();
+async fn proxy_frontend(uri: Uri) -> impl IntoResponse {
+    let dev_server_uri = Uri::builder()
+        .scheme("http")
+        .authority("localhost:3929")
+        .path_and_query(uri.path())
+        .build()
+        .unwrap();
     let req = Request::builder()
-        .uri(format!("http://localhost:3929{}", path))
+        .uri(dev_server_uri)
         .body(Body::empty())
         .unwrap();
     let client = hyper::Client::new();
     client.request(req).await.unwrap()
+}
+
+async fn serve_static_path(path: &str) -> impl IntoResponse {
+    let mime_type = mime_guess::from_path(path).first_or_text_plain();
+
+    debug!("Serving {} ({})", path, mime_type);
+
+    match STATIC_DIR.get_file(path) {
+        None => Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(body::boxed(Empty::new()))
+            .unwrap(),
+        Some(file) => Response::builder()
+            .status(StatusCode::OK)
+            .header(
+                header::CONTENT_TYPE,
+                HeaderValue::from_str(mime_type.as_ref()).unwrap(),
+            )
+            .body(body::boxed(Full::from(file.contents())))
+            .unwrap(),
+    }
+}
+
+async fn serve_static(axum::extract::Path(path): axum::extract::Path<String>) -> impl IntoResponse {
+    serve_static_path(path.trim_start_matches('/')).await
+}
+
+async fn serve_root() -> impl IntoResponse {
+    serve_static_path("index.html").await
 }
 
 async fn shutdown_signal() {
@@ -116,11 +154,22 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let app = Router::new()
-        .route("/composite", post(composite))
-        .fallback(serve_frontend)
+    let webpack_dev_server = std::env::var("WEBPACK_DEV_SERVER").is_ok();
+
+    let mut app = Router::new().route("/composite", post(composite));
+
+    if webpack_dev_server {
+        app = app.fallback(proxy_frontend);
+    } else {
+        app = app
+            .route("/*path", get(serve_static))
+            .route("/", get(serve_root));
+    }
+
+    let app = app
         .layer(CatchPanicLayer::new())
         .layer(TraceLayer::new_for_http())
+        .layer(CompressionLayer::new())
         .layer(DefaultBodyLimit::max(1024 * 1024 * 20)); // increase the size to 20MB
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3928));
