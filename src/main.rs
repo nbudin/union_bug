@@ -14,14 +14,12 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use axum_macros::debug_handler;
 use hyper::{header, StatusCode};
 use image::{
     imageops::{self, FilterType},
     DynamicImage, EncodableLayout, ImageFormat,
 };
 use include_dir::{include_dir, Dir};
-use serde::Deserialize;
 use tower_http::{catch_panic::CatchPanicLayer, compression::CompressionLayer, trace::TraceLayer};
 use tracing::{debug, info};
 
@@ -54,10 +52,6 @@ fn overlay_frame(
     img
 }
 
-#[derive(Deserialize)]
-struct CompositeInput {}
-
-#[debug_handler]
 async fn composite(mut multipart: Multipart) -> impl IntoResponse {
     let mut img: Option<DynamicImage> = None;
     while let Some(field) = multipart.next_field().await.unwrap() {
@@ -83,7 +77,7 @@ async fn composite(mut multipart: Multipart) -> impl IntoResponse {
         let overlay = get_image(ImageAssetIdentity::ABTWUTopLeftTemplate);
 
         let result = overlay_frame(img, overlay, 1024, 1024);
-        let bytes: Vec<u8> = Vec::with_capacity(1024 * 1024); // 1MB will probably fit most images
+        let bytes: Vec<u8> = Vec::with_capacity(1024 * 1024 * 2); // 2MB will probably fit most images
         let mut cursor = Cursor::new(bytes);
         result.write_to(&mut cursor, ImageFormat::Png).unwrap();
 

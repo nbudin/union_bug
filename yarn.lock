@@ -1481,6 +1481,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/blueimp-load-image@npm:^5.16.0":
+  version: 5.16.0
+  resolution: "@types/blueimp-load-image@npm:5.16.0"
+  checksum: 20ebb10e37ad6f4888e9b4e6f0fbe46643c1177189e0fb4e6d2d1763cc51b21e9a45f1f360424fb70d7a74cca12cb2e8c702f0dd83a58d8f37d050a8e53f3f70
+  languageName: node
+  linkType: hard
+
 "@types/body-parser@npm:*":
   version: 1.19.2
   resolution: "@types/body-parser@npm:1.19.2"
@@ -1658,6 +1665,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: b62f0ea3cdfa68e106391728325057ad36f1bde7ba2dfae029472c47e01e482bc77c6ba4f1dad59f3f04ee81cb597618ff7c30a33c157c0a20462b6dd6aa2d4d
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^17.0":
+  version: 17.0.52
+  resolution: "@types/react@npm:17.0.52"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: a51b98dd87838d161278fdf9dd78e6a4ff8c018f406d6647f77963e144fb52a8beee40c89fd0e7e840eaeaa8bd9fe2f34519410540b1a52d43a6f8b4d2fbce33
   languageName: node
   linkType: hard
 
@@ -2187,6 +2205,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"blueimp-load-image@npm:^5.16.0":
+  version: 5.16.0
+  resolution: "blueimp-load-image@npm:5.16.0"
+  checksum: 5250333c578938fa6c0130c925a70d35bd012f0f17a9e9fa7ea0c5c754ce9ec6ab0a9960aa760e603a0b3b06a2af3bff12026022b205ca13409ac73dbe436c00
+  languageName: node
+  linkType: hard
+
 "body-parser@npm:1.20.1":
   version: 1.20.1
   resolution: "body-parser@npm:1.20.1"
@@ -2399,6 +2424,13 @@ __metadata:
   version: 1.0.3
   resolution: "chrome-trace-event@npm:1.0.3"
   checksum: cb8b1fc7e881aaef973bd0c4a43cd353c2ad8323fb471a041e64f7c2dd849cde4aad15f8b753331a32dda45c973f032c8a03b8177fc85d60eaa75e91e08bfb97
+  languageName: node
+  linkType: hard
+
+"classnames@npm:^2.3.1":
+  version: 2.3.2
+  resolution: "classnames@npm:2.3.2"
+  checksum: 2c62199789618d95545c872787137262e741f9db13328e216b093eea91c85ef2bfb152c1f9e63027204e2559a006a92eb74147d46c800a9f96297ae1d9f96f4e
   languageName: node
   linkType: hard
 
@@ -4716,6 +4748,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-bootstrap4-modal@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "react-bootstrap4-modal@npm:2.0.0"
+  dependencies:
+    "@types/react": ^17.0
+    classnames: ^2.3.1
+  peerDependencies:
+    react: ^17.0
+  checksum: dda367ba6376a30f542998ed56cc7fae2799587d51a5f3f443f84bc5138eef1d723da170bc99b5a2880719ad9de1480de5e57a225fafd795e94777b034e20d85
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
@@ -5568,10 +5612,12 @@ __metadata:
     "@babel/preset-react": ^7.18.6
     "@babel/preset-typescript": ^7.18.6
     "@popperjs/core": ^2.11.6
+    "@types/blueimp-load-image": ^5.16.0
     "@types/react": ^18.0.26
     "@types/react-dom": ^18.0.9
     autoprefixer: ^10.4.13
     babel-loader: ^9.1.0
+    blueimp-load-image: ^5.16.0
     bootstrap: ^5.2.3
     css-loader: ^6.7.3
     html-webpack-plugin: ^5.5.0
@@ -5579,6 +5625,7 @@ __metadata:
     postcss: ^8.4.20
     postcss-loader: ^7.0.2
     react: ^18.2.0
+    react-bootstrap4-modal: ^2.0.0
     react-dom: ^18.2.0
     react-image-crop: ^10.0.9
     sass: ^1.56.2
