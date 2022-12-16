@@ -71,6 +71,7 @@ jobs:
       - test
       - fmt
       - clippy
+      - tsc
     outputs:
       name: ${{ steps.release-drafter.outputs.name }}
       html_url: ${{ steps.release-drafter.outputs.html_url }}
