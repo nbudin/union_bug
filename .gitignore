@@ -7,3 +7,5 @@
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+/public/*
+!/public/.gitkeep
