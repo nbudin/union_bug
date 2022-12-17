@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { Modal } from "react-bootstrap4-modal";
 
 function saveBlob(blob: Blob, fileName: string) {
-  var a = document.createElement("a");
-  var url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const url = window.URL.createObjectURL(blob);
   a.href = url;
   a.download = fileName;
   a.click();
@@ -40,7 +40,9 @@ export default function ResultModal({
         ></button>
       </div>
       <div className="modal-body">
-        {objectURL && <img src={objectURL} className="img-fluid" />}
+        {objectURL && (
+          <img src={objectURL} className="img-fluid" alt="Your avatar" />
+        )}
       </div>
       <div className="modal-footer">
         {blob && (
