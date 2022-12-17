@@ -1,15 +1,10 @@
-import loadImage, { LoadImageResult } from "blueimp-load-image";
-import React, { ChangeEvent } from "react";
+import loadImage from "blueimp-load-image";
+import { ChangeEvent, useContext } from "react";
+import { MakeAvatarContext } from "./MakeAvatarContext";
 
-export type UploadImageInputProps = {
-  setFile: React.Dispatch<File>;
-  setImage: React.Dispatch<LoadImageResult | undefined>;
-};
+export default function UploadImageInput() {
+  const { setImage, setFile } = useContext(MakeAvatarContext);
 
-export default function UploadImageInput({
-  setFile,
-  setImage,
-}: UploadImageInputProps) {
   const fileInputChanged = (event: ChangeEvent<HTMLInputElement>) => {
     const file = (event.target.files ?? [])[0];
     setFile(file);
