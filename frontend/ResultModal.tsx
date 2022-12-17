@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { Modal } from "react-bootstrap4-modal";
+import { MakeAvatarContext } from "./MakeAvatarContext";
 
 function saveBlob(blob: Blob, fileName: string) {
   const a = document.createElement("a");
@@ -10,33 +11,25 @@ function saveBlob(blob: Blob, fileName: string) {
   window.URL.revokeObjectURL(url);
 }
 
-export type ResultModalProps = {
-  onClose: () => void;
-  blob?: Blob;
-  fileName?: string;
-};
+export default function ResultModal() {
+  const { resultBlob, file, setResultBlob } = useContext(MakeAvatarContext);
 
-export default function ResultModal({
-  blob,
-  fileName,
-  onClose,
-}: ResultModalProps) {
   const objectURL = useMemo(() => {
-    if (blob) {
-      return URL.createObjectURL(blob);
+    if (resultBlob) {
+      return URL.createObjectURL(resultBlob);
     } else {
       return undefined;
     }
-  }, [blob]);
+  }, [resultBlob]);
 
   return (
-    <Modal visible={blob != null} dialogClassName="modal-lg">
+    <Modal visible={resultBlob != null} dialogClassName="modal-lg">
       <div className="modal-header">
         <div className="flex-grow-1"> Your avatar</div>
         <button
           aria-label="Close"
           className="btn-close"
-          onClick={onClose}
+          onClick={() => setResultBlob(undefined)}
         ></button>
       </div>
       <div className="modal-body">
@@ -45,10 +38,10 @@ export default function ResultModal({
         )}
       </div>
       <div className="modal-footer">
-        {blob && (
+        {resultBlob && (
           <button
             className="btn btn-success"
-            onClick={() => saveBlob(blob, fileName ?? "")}
+            onClick={() => saveBlob(resultBlob, file?.name ?? "")}
           >
             Save my avatar
           </button>
