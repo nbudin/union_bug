@@ -1,8 +1,9 @@
-import React from "react";
+import { useContext } from "react";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { fetchJSON } from "./fetchUtils";
-import { Overlay, overlaySchema } from "./overlay";
+import { overlaySchema } from "./overlay";
+import { MakeAvatarContext } from "./MakeAvatarContext";
 
 const overlayIndexSchema = z.array(overlaySchema);
 
@@ -11,15 +12,8 @@ async function fetchOverlays() {
   return overlayIndexSchema.parse(json);
 }
 
-export type OverlayPickerProps = {
-  overlay: Overlay | undefined;
-  setOverlay: React.Dispatch<React.SetStateAction<Overlay | undefined>>;
-};
-
-export default function OverlayPicker({
-  overlay,
-  setOverlay,
-}: OverlayPickerProps) {
+export default function OverlayPicker() {
+  const { overlay, setOverlay } = useContext(MakeAvatarContext);
   const { data, isLoading, error } = useQuery(["overlays"], fetchOverlays);
 
   if (isLoading) {
@@ -40,8 +34,28 @@ export default function OverlayPicker({
 
   return (
     <div className="d-flex">
-      {(data ?? []).map((overlay) => (
-        <div key={overlay.key}>{overlay.description}</div>
+      {(data ?? []).map((o) => (
+        <div key={o.key} style={{ maxWidth: "512px" }}>
+          <input
+            type="radio"
+            className="btn-check"
+            id={`overlay-${o.key}`}
+            autoComplete="off"
+            checked={overlay?.key === o.key}
+            onChange={() => setOverlay(o)}
+          />
+          <label
+            className="btn btn-outline-primary"
+            htmlFor={`overlay-${o.key}`}
+          >
+            <img
+              src={`/overlays/${o.key}`}
+              alt={`${o.description} thumbnail`}
+            />
+            <br />
+            {o.description}
+          </label>
+        </div>
       ))}
     </div>
   );

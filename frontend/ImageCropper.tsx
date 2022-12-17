@@ -1,18 +1,10 @@
-import { LoadImageResult } from "blueimp-load-image";
-import React, { useEffect } from "react";
-import ReactCrop, { Crop } from "react-image-crop";
+import { useContext, useEffect } from "react";
+import ReactCrop from "react-image-crop";
+import { MakeAvatarContext } from "./MakeAvatarContext";
 
-export type ImageCropperProps = {
-  image: LoadImageResult;
-  crop: Crop | undefined;
-  setCrop: React.Dispatch<Crop | undefined>;
-};
+export default function ImageCropper() {
+  const { image, crop, setCrop } = useContext(MakeAvatarContext);
 
-export default function ImageCropper({
-  image,
-  crop,
-  setCrop,
-}: ImageCropperProps) {
   useEffect(() => {
     if (image) {
       const { originalWidth, originalHeight } = image;
@@ -38,6 +30,10 @@ export default function ImageCropper({
       }
     }
   }, [image, setCrop]);
+
+  if (!image) {
+    return <></>;
+  }
 
   return (
     <ReactCrop

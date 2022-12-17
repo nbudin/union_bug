@@ -1,21 +1,15 @@
-import { FormEvent, useState } from "react";
-import { Crop } from "react-image-crop";
-import { LoadImageResult } from "blueimp-load-image";
+import { FormEvent, useContext } from "react";
 
 import "react-image-crop/src/ReactCrop.scss";
 import ResultModal from "./ResultModal";
 import { fetchAndCheckStatus } from "./fetchUtils";
 import OverlayPicker from "./OverlayPicker";
-import { Overlay } from "./overlay";
 import UploadImageInput from "./UploadImageInput";
 import ImageCropper from "./ImageCropper";
+import { MakeAvatarContext } from "./MakeAvatarContext";
 
 export default function IndexPage() {
-  const [file, setFile] = useState<File>();
-  const [image, setImage] = useState<LoadImageResult>();
-  const [crop, setCrop] = useState<Crop>();
-  const [resultBlob, setResultBlob] = useState<Blob>();
-  const [overlay, setOverlay] = useState<Overlay>();
+  const { image, crop, file, setResultBlob } = useContext(MakeAvatarContext);
 
   const buildFormData = (): Promise<FormData> => {
     const maybeCanvas = image?.image;
@@ -78,12 +72,12 @@ export default function IndexPage() {
       <div className="container">
         <h1>Union Bug</h1>
         <form onSubmit={formSubmitted}>
-          <UploadImageInput setFile={setFile} setImage={setImage} />
+          <UploadImageInput />
 
           {image && (
             <>
-              <ImageCropper image={image} crop={crop} setCrop={setCrop} />
-              <OverlayPicker overlay={overlay} setOverlay={setOverlay} />
+              <ImageCropper />
+              <OverlayPicker />
 
               <div>
                 <input
@@ -97,11 +91,7 @@ export default function IndexPage() {
         </form>
       </div>
 
-      <ResultModal
-        blob={resultBlob}
-        fileName="union-bug-avatar.png"
-        onClose={() => setResultBlob(undefined)}
-      />
+      <ResultModal />
     </>
   );
 }
