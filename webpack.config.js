@@ -7,7 +7,7 @@ module.exports = {
   mode: env.NODE_ENV === "production" ? "production" : "development",
   devtool:
     env.NODE_ENV === "production" ? undefined : "cheap-module-source-map",
-  entry: "./frontend/index.ts",
+  entry: "./frontend/index.tsx",
   devServer: {
     port: 3929,
     open: false,
