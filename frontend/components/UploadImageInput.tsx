@@ -1,6 +1,6 @@
 import loadImage from "blueimp-load-image";
 import { ChangeEvent, useContext } from "react";
-import { MakeAvatarContext } from "./MakeAvatarContext";
+import { MakeAvatarContext } from "../MakeAvatarContext";
 
 export default function UploadImageInput() {
   const { setImage, setFile } = useContext(MakeAvatarContext);

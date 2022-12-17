@@ -7,7 +7,9 @@ module.exports = {
   mode: env.NODE_ENV === "production" ? "production" : "development",
   devtool:
     env.NODE_ENV === "production" ? undefined : "cheap-module-source-map",
-  entry: "./frontend/index.tsx",
+  entry: {
+    "/assets/index": "./frontend/index.tsx",
+  },
   devServer: {
     port: 3929,
     open: false,
@@ -16,7 +18,6 @@ module.exports = {
     extensions: [".ts", ".tsx", ".js", ".jsx"],
   },
   output: {
-    filename: "index.js",
     path: path.resolve(__dirname, "public"),
   },
   module: {

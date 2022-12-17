@@ -1,9 +1,9 @@
-import { useContext } from "react";
+import React from "react";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
-import { fetchJSON } from "./fetchUtils";
-import { overlaySchema } from "./overlay";
-import { MakeAvatarContext } from "./MakeAvatarContext";
+import { fetchJSON } from "../fetchUtils";
+import { Overlay, overlaySchema } from "../overlay";
+import { Spinner } from "./Spinner";
 
 const overlayIndexSchema = z.array(overlaySchema);
 
@@ -12,16 +12,19 @@ async function fetchOverlays() {
   return overlayIndexSchema.parse(json);
 }
 
-export default function OverlayPicker() {
-  const { overlay, setOverlay } = useContext(MakeAvatarContext);
+export type OverlayPickerProps = {
+  overlay: Overlay | undefined;
+  setOverlay: React.Dispatch<React.SetStateAction<Overlay | undefined>>;
+};
+
+export default function OverlayPicker({
+  overlay,
+  setOverlay,
+}: OverlayPickerProps) {
   const { data, isLoading, error } = useQuery(["overlays"], fetchOverlays);
 
   if (isLoading) {
-    return (
-      <div className="spinner-border" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </div>
-    );
+    return <Spinner />;
   }
 
   if (error) {
@@ -35,7 +38,7 @@ export default function OverlayPicker() {
   return (
     <div className="d-flex">
       {(data ?? []).map((o) => (
-        <div key={o.key} style={{ maxWidth: "512px" }}>
+        <div key={o.key} style={{ maxWidth: "256px" }}>
           <input
             type="radio"
             className="btn-check"
@@ -51,6 +54,7 @@ export default function OverlayPicker() {
             <img
               src={`/overlays/${o.key}`}
               alt={`${o.description} thumbnail`}
+              className="img-fluid"
             />
             <br />
             {o.description}

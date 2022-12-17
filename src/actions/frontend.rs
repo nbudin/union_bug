@@ -1,5 +1,5 @@
 use axum::{
-    body::{self, Empty, Full},
+    body::{self, Full},
     http::HeaderValue,
     response::{IntoResponse, Response},
 };
@@ -10,12 +10,22 @@ use tracing::debug;
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/public");
 
 pub async fn proxy_frontend(uri: Uri) -> impl IntoResponse {
+    let path = uri.path();
+    let path = if path.starts_with("/assets/") {
+        path
+    } else {
+        "/"
+    };
+
     let dev_server_uri = Uri::builder()
         .scheme("http")
         .authority("localhost:3929")
-        .path_and_query(uri.path())
+        .path_and_query(path)
         .build()
         .unwrap();
+
+    debug!("Proxying {} to {}", uri, dev_server_uri);
+
     let req = Request::builder()
         .uri(dev_server_uri)
         .body(Body::empty())
@@ -25,24 +35,29 @@ pub async fn proxy_frontend(uri: Uri) -> impl IntoResponse {
 }
 
 pub async fn serve_static_path(path: &str) -> impl IntoResponse {
-    let mime_type = mime_guess::from_path(path).first_or_text_plain();
+    let file = STATIC_DIR.get_file(path);
 
-    debug!("Serving {} ({})", path, mime_type);
+    let file = match file {
+        Some(file) => file,
+        None => STATIC_DIR.get_file("index.html").unwrap(),
+    };
 
-    match STATIC_DIR.get_file(path) {
-        None => Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(body::boxed(Empty::new()))
-            .unwrap(),
-        Some(file) => Response::builder()
-            .status(StatusCode::OK)
-            .header(
-                header::CONTENT_TYPE,
-                HeaderValue::from_str(mime_type.as_ref()).unwrap(),
-            )
-            .body(body::boxed(Full::from(file.contents())))
-            .unwrap(),
-    }
+    let mime_type = mime_guess::from_path(file.path()).first_or_text_plain();
+    debug!(
+        "Request for {}: serving {} ({})",
+        path,
+        file.path().display(),
+        mime_type
+    );
+
+    Response::builder()
+        .status(StatusCode::OK)
+        .header(
+            header::CONTENT_TYPE,
+            HeaderValue::from_str(mime_type.as_ref()).unwrap(),
+        )
+        .body(body::boxed(Full::from(file.contents())))
+        .unwrap()
 }
 
 pub async fn serve_static(
@@ -52,5 +67,5 @@ pub async fn serve_static(
 }
 
 pub async fn serve_root() -> impl IntoResponse {
-    serve_static_path("index.html").await
+    serve_static_path("").await
 }

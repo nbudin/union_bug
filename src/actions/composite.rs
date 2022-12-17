@@ -5,34 +5,46 @@ use hyper::HeaderMap;
 use image::{DynamicImage, EncodableLayout, ImageFormat};
 use tracing::debug;
 
-use crate::{assets::OVERLAYS_BY_KEY, image_processing::overlay_frame};
+use crate::{
+    assets::{Overlay, OVERLAYS_BY_KEY},
+    image_processing::overlay_frame,
+};
 
 pub async fn composite(mut multipart: Multipart) -> impl IntoResponse {
     let mut img: Option<DynamicImage> = None;
+    let mut overlay: Option<&Overlay> = None;
+
     while let Some(field) = multipart.next_field().await.unwrap() {
-        let name = field.name().unwrap().to_string();
-        if name == "image" {
-            debug!("Decoding uploaded image");
-            let format = match field.content_type() {
-                Some("image/png") => Some(ImageFormat::Png),
-                _ => None,
-            };
+        let name = field.name().unwrap();
+        match name {
+            "image" => {
+                debug!("Decoding uploaded image");
+                let format = match field.content_type() {
+                    Some("image/png") => Some(ImageFormat::Png),
+                    _ => None,
+                };
 
-            let data = field.bytes().await.unwrap();
+                let data = field.bytes().await.unwrap();
 
-            if let Some(format) = format {
-                img = Some(image::load_from_memory_with_format(data.as_bytes(), format).unwrap());
-            } else {
-                img = Some(image::load_from_memory(data.as_bytes()).unwrap());
+                if let Some(format) = format {
+                    img =
+                        Some(image::load_from_memory_with_format(data.as_bytes(), format).unwrap());
+                } else {
+                    img = Some(image::load_from_memory(data.as_bytes()).unwrap());
+                }
+            }
+            "overlay" => {
+                let overlay_key = field.text().await.unwrap();
+                overlay = OVERLAYS_BY_KEY.get(overlay_key.as_str()).copied();
+            }
+            _ => {
+                // ignore any other key/value pairs
             }
         }
     }
 
     if let Some(img) = img.as_ref() {
-        let overlay = OVERLAYS_BY_KEY
-            .get("abtwu-top-left-template")
-            .unwrap()
-            .image;
+        let overlay = overlay.unwrap().image;
 
         let result = overlay_frame(img, overlay, 1024, 1024);
         let bytes: Vec<u8> = Vec::with_capacity(1024 * 1024 * 2); // 2MB will probably fit most images
