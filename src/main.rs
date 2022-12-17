@@ -5,14 +5,14 @@ use std::{
     net::SocketAddr,
 };
 
-use assets::get_image;
+use assets::{OVERLAYS, OVERLAYS_BY_KEY};
 use axum::{
     body::{self, Body, Empty, Full},
     extract::{DefaultBodyLimit, Multipart},
     http::{HeaderMap, HeaderValue, Request, Uri},
     response::{IntoResponse, Response},
     routing::{get, post},
-    Router,
+    Json, Router,
 };
 use hyper::{header, StatusCode};
 use image::{
@@ -20,10 +20,9 @@ use image::{
     DynamicImage, EncodableLayout, ImageFormat,
 };
 use include_dir::{include_dir, Dir};
+use maplit::hashmap;
 use tower_http::{catch_panic::CatchPanicLayer, compression::CompressionLayer, trace::TraceLayer};
 use tracing::{debug, info};
-
-use crate::assets::ImageAssetIdentity;
 
 static STATIC_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/public");
 
@@ -74,7 +73,10 @@ async fn composite(mut multipart: Multipart) -> impl IntoResponse {
     }
 
     if let Some(img) = img.as_ref() {
-        let overlay = get_image(ImageAssetIdentity::ABTWUTopLeftTemplate);
+        let overlay = OVERLAYS_BY_KEY
+            .get("abtwu-top-left-template")
+            .unwrap()
+            .image;
 
         let result = overlay_frame(img, overlay, 1024, 1024);
         let bytes: Vec<u8> = Vec::with_capacity(1024 * 1024 * 2); // 2MB will probably fit most images
@@ -136,6 +138,20 @@ async fn serve_root() -> impl IntoResponse {
     serve_static_path("index.html").await
 }
 
+async fn overlay_index() -> impl IntoResponse {
+    Json(
+        OVERLAYS
+            .iter()
+            .map(|overlay| {
+                hashmap! {
+                    "key" => overlay.key,
+                    "description" => overlay.description
+                }
+            })
+            .collect::<Vec<_>>(),
+    )
+}
+
 async fn shutdown_signal() {
     tokio::signal::ctrl_c()
         .await
@@ -150,7 +166,9 @@ async fn main() {
 
     let webpack_dev_server = std::env::var("WEBPACK_DEV_SERVER").is_ok();
 
-    let mut app = Router::new().route("/composite", post(composite));
+    let mut app = Router::new()
+        .route("/composite", post(composite))
+        .route("/overlays", get(overlay_index));
 
     if webpack_dev_server {
         app = app.fallback(proxy_frontend);
