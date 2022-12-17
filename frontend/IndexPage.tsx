@@ -1,53 +1,21 @@
-import { ChangeEvent, FormEvent, useState } from "react";
-import ReactCrop, { Crop } from "react-image-crop";
-import loadImage, { LoadImageResult } from "blueimp-load-image";
+import { FormEvent, useState } from "react";
+import { Crop } from "react-image-crop";
+import { LoadImageResult } from "blueimp-load-image";
 
 import "react-image-crop/src/ReactCrop.scss";
 import ResultModal from "./ResultModal";
+import { fetchAndCheckStatus } from "./fetchUtils";
+import OverlayPicker from "./OverlayPicker";
+import { Overlay } from "./overlay";
+import UploadImageInput from "./UploadImageInput";
+import ImageCropper from "./ImageCropper";
 
 export default function IndexPage() {
   const [file, setFile] = useState<File>();
   const [image, setImage] = useState<LoadImageResult>();
   const [crop, setCrop] = useState<Crop>();
   const [resultBlob, setResultBlob] = useState<Blob>();
-
-  const fileInputChanged = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = (event.target.files ?? [])[0];
-    setFile(file);
-    if (file) {
-      loadImage(file, {
-        cover: true,
-        canvas: true,
-        maxHeight: 1024,
-        maxWidth: 1024,
-      }).then((result) => {
-        setImage(result);
-        const { originalWidth, originalHeight } = result;
-        if (originalWidth && originalHeight) {
-          const originalAspect = originalWidth / originalHeight;
-          if (originalAspect > 1) {
-            setCrop({
-              unit: "px",
-              y: 0,
-              height: 1024,
-              x: (1024 * originalAspect - 1024) / 2,
-              width: 1024,
-            });
-          } else {
-            setCrop({
-              unit: "px",
-              x: 0,
-              width: 1024,
-              y: (1024 / originalAspect - 1024) / 2,
-              height: 1024,
-            });
-          }
-        }
-      });
-    } else {
-      setImage(undefined);
-    }
-  };
+  const [overlay, setOverlay] = useState<Overlay>();
 
   const buildFormData = (): Promise<FormData> => {
     const maybeCanvas = image?.image;
@@ -56,7 +24,11 @@ export default function IndexPage() {
       const destinationCanvas = document.createElement("canvas");
       destinationCanvas.width = crop.width;
       destinationCanvas.height = crop.height;
-      const context = destinationCanvas.getContext("2d")!;
+      const context = destinationCanvas.getContext("2d");
+      if (!context) {
+        throw new Error("Couldn't get 2D drawing context from canvas");
+      }
+
       context.drawImage(
         maybeCanvas,
         crop.x,
@@ -69,10 +41,14 @@ export default function IndexPage() {
         crop.height
       );
 
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         destinationCanvas.toBlob((blob) => {
-          formData.append("image", blob!, file?.name);
-          resolve(formData);
+          if (blob) {
+            formData.append("image", blob, file?.name);
+            resolve(formData);
+          } else {
+            reject(new Error("Couldn't convert canvas contents to PNG blob"));
+          }
         }, "image/png");
       });
     } else if (file) {
@@ -88,13 +64,10 @@ export default function IndexPage() {
     event.stopPropagation();
 
     const formData = await buildFormData();
-    const response = await fetch("/composite", {
+    const response = await fetchAndCheckStatus("/composite", {
       body: formData,
       method: "POST",
     });
-    if (response.status < 200 || response.status >= 400) {
-      throw new Error(response.statusText);
-    }
 
     const blob = await response.blob();
     setResultBlob(blob);
@@ -105,34 +78,13 @@ export default function IndexPage() {
       <div className="container">
         <h1>Union Bug</h1>
         <form onSubmit={formSubmitted}>
-          <div className="mb-3">
-            <label htmlFor="imageInput" className="form-label">
-              Choose an image for your avatar
-            </label>
-            <input
-              className="form-control"
-              type="file"
-              id="imageInput"
-              name="image"
-              onChange={fileInputChanged}
-            ></input>
-          </div>
+          <UploadImageInput setFile={setFile} setImage={setImage} />
 
           {image && (
             <>
-              <ReactCrop
-                aspect={1}
-                crop={crop}
-                onChange={(crop, percentageCrop) => {
-                  setCrop(crop);
-                }}
-              >
-                <div
-                  ref={(element) => {
-                    element?.appendChild(image.image);
-                  }}
-                />
-              </ReactCrop>
+              <ImageCropper image={image} crop={crop} setCrop={setCrop} />
+              <OverlayPicker overlay={overlay} setOverlay={setOverlay} />
+
               <div>
                 <input
                   type="submit"
