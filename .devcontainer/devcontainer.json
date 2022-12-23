@@ -1,11 +1,18 @@
 {
   "build": {
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "../Dockerfile.devcontainer"
   },
   "customizations": {
     "vscode": {
-      "extensions": ["rust-lang.rust-analyzer"]
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "arcanis.vscode-zipfs",
+        "dabeumer.vscode-eslint",
+        "vadimcn.vscode-lldb",
+        "esbenp.prettier-vscode"
+      ]
     }
   },
-  "forwardPorts": [3928]
+  "forwardPorts": [3928],
+  "postCreateCommand": "yarn install"
 }

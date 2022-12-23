@@ -5,6 +5,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Run webpack-dev-server",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["run", "start"],
+      "console": "integratedTerminal"
+    },
+    {
       "type": "lldb",
       "request": "launch",
       "name": "Debug executable 'union_bug'",
@@ -20,7 +28,8 @@
         "RUST_LOG": "debug",
         "WEBPACK_DEV_SERVER": "1"
       },
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "initCommands": ["settings set target.disable-aslr false"]
     },
     {
       "type": "lldb",
@@ -35,6 +44,15 @@
       },
       "args": [],
       "cwd": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Client/Server",
+      "configurations": [
+        "Run webpack-dev-server",
+        "Debug executable 'union_bug'"
+      ]
     }
   ]
 }
