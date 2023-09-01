@@ -77,6 +77,7 @@ jobs:
       - name: Add ubuntu ports repositories for arm64
         run: |
           cat /etc/apt/sources.list
+          cat /etc/apt/apt-mirrors.txt
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted" | sudo tee -a /etc/apt/sources.list
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted" | sudo tee -a /etc/apt/sources.list
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted" | sudo tee -a /etc/apt/sources.list
