@@ -3,16 +3,6 @@ on: push
 name: Continuous integration
 
 jobs:
-  check:
-    name: Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: sudo apt-get update && sudo apt-get install -y libdav1d-dev
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo check
-
   eslint:
     name: ESLint
     runs-on: ubuntu-latest
@@ -74,6 +64,7 @@ jobs:
       - run: cargo clippy --workspace -- -D warnings
 
   release-build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -83,6 +74,10 @@ jobs:
         run: rustup target add aarch64-unknown-linux-gnu
       - name: Add arm64 architecture in dpkg
         run: sudo dpkg --add-architecture arm64
+      - name: Add ubuntu ports repositories for arm64
+        run: |
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted" | sudo tee -a /etc/apt/sources.list
       - name: apt-get update
         run: sudo apt-get update
       - name: Install compilation dependencies
@@ -96,7 +91,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
     needs:
-      - check
       - test
       - fmt
       - clippy
