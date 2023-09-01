@@ -89,6 +89,16 @@ jobs:
         run: cargo build -r
       - name: Build aarch64 release
         run: PKG_CONFIG_SYSROOT_DIR=/usr/lib/arm64-linux-gnu cargo build -r --target=aarch64-unknown-linux-gnu
+      - name: Store x86_64 binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: union_bug-x86_64-unknown-linux-gnu
+          path: target/release/union_bug
+      - name: Store aarch64 binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: union_bug-aarch64-unknown-linux-gnu
+          path: target/aarch64-unknown-linux-gnu/release/union_bug
 
   update-release-draft:
     runs-on: ubuntu-latest
