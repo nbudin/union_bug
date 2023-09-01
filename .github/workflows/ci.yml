@@ -63,8 +63,27 @@ jobs:
       - run: rustup component add clippy
       - run: cargo clippy --workspace -- -D warnings
 
-  release-build:
-    name: Build
+  client-build:
+    name: Build client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install node
+        uses: actions/setup-node@v3
+        with:
+          cache: yarn
+      - name: yarn install
+        run: yarn install
+      - name: Build webpack bundle
+        run: yarn run build
+      - name: Store client bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: union_bug-client
+          path: public
+
+  server-build:
+    name: Build server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -109,7 +128,8 @@ jobs:
       - clippy
       - tsc
       - eslint
-      - release-build
+      - client-build
+      - server-build
     outputs:
       name: ${{ steps.release-drafter.outputs.name }}
       html_url: ${{ steps.release-drafter.outputs.html_url }}
