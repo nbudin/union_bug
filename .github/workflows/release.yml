@@ -9,6 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Add aarch64-unknown-linux-gnu target to Rust
+        run: rustup target add aarch64-unknown-linux-gnu
+      - name: Add aarch64 architecture in dpkg
+        run: sudo dpkg --add-architecture aarch64
+      - name: apt-get update
+        run: sudo apt-get update
+      - name: Install compilation dependencies
+        run: sudo apt-get install -y libdav1d-dev libclang-dev build-essential pkg-config libdav1d-dev:aarch64 libc6-dev:aarch64
+      - name: Build x86_64 release
+        run: cargo build -r
+      - name: Build aarch64 release
+        run: cargo build -r --target=aarch64-unknown-linux-gnu
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@master

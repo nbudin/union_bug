@@ -49,9 +49,8 @@ jobs:
         uses: mikepenz/action-junit-report@v3
         if: always() # always run even if the previous step fails
         with:
-          check_name: 'Test Report'
-          report_paths: 'target/nextest/ci/junit.xml'
-
+          check_name: "Test Report"
+          report_paths: "target/nextest/ci/junit.xml"
 
   fmt:
     name: Rustfmt
@@ -74,6 +73,25 @@ jobs:
       - run: rustup component add clippy
       - run: cargo clippy --workspace -- -D warnings
 
+  release-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Add aarch64-unknown-linux-gnu target to Rust
+        run: rustup target add aarch64-unknown-linux-gnu
+      - name: Add aarch64 architecture in dpkg
+        run: sudo dpkg --add-architecture aarch64
+      - name: apt-get update
+        run: sudo apt-get update
+      - name: Install compilation dependencies
+        run: sudo apt-get install -y libdav1d-dev libclang-dev build-essential pkg-config libdav1d-dev:aarch64 libc6-dev:aarch64
+      - name: Build x86_64 release
+        run: cargo build -r
+      - name: Build aarch64 release
+        run: cargo build -r --target=aarch64-unknown-linux-gnu
+
   update-release-draft:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'
@@ -84,6 +102,7 @@ jobs:
       - clippy
       - tsc
       - eslint
+      - release-build
     outputs:
       name: ${{ steps.release-drafter.outputs.name }}
       html_url: ${{ steps.release-drafter.outputs.html_url }}
