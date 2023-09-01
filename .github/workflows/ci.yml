@@ -76,7 +76,7 @@ jobs:
         run: sudo dpkg --add-architecture arm64
       - name: Add ubuntu ports repositories for arm64
         run: |
-          echo "http://ports.ubuntu.com/ubuntu-ports priority:4" | sudo tee -a /etc/apt/apt-mirrors.txt
+          echo "http://ports.ubuntu.com/ubuntu-ports\tpriority:4" | sudo tee -a /etc/apt/apt-mirrors.txt
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted" | sudo tee -a /etc/apt/sources.list
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted" | sudo tee -a /etc/apt/sources.list
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted" | sudo tee -a /etc/apt/sources.list
