@@ -75,7 +75,7 @@ jobs:
       - name: Add arm64 architecture in dpkg
         run: sudo dpkg --add-architecture arm64
       - name: Add ubuntu ports repositories for arm64
-        run: echo "http://ports.ubuntu.com/ubuntu-ports\\tpriority:4" | sudo tee -a /etc/apt/apt-mirrors.txt
+        run: printf 'http://ports.ubuntu.com/ubuntu-ports\tpriority:4\n' | sudo tee -a /etc/apt/apt-mirrors.txt
       - name: apt-get update
         run: sudo apt-get update
       - name: Install compilation dependencies
