@@ -83,7 +83,7 @@ jobs:
       - name: Build x86_64 release
         run: cargo build -r
       - name: Build aarch64 release
-        run: cargo build -r --target=aarch64-unknown-linux-gnu
+        run: PKG_CONFIG_SYSROOT_DIR=/usr/lib/arm64-linux-gnu cargo build -r --target=aarch64-unknown-linux-gnu
 
   update-release-draft:
     runs-on: ubuntu-latest
