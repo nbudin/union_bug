@@ -101,7 +101,7 @@ jobs:
         run: |
           mkdir build
           mv target/release/union_bug build/union_bug-amd64-unknown-linux-gnu
-          mv target/release/aarch64-unknown-linux-gnu/releaseunion_bug build/union_bug-arm64-unknown-linux-gnu
+          mv target/release/aarch64-unknown-linux-gnu/release/union_bug build/union_bug-arm64-unknown-linux-gnu
       - name: Store built binaries
         uses: actions/upload-artifact@v3
         with:
