@@ -1,4 +1,6 @@
 FROM debian:bookworm-slim
+ARG TARGETARCH
+
 RUN apt-get update && \
   apt-get install -y --no-install-recommends dav1d && \
   rm -rf /var/lib/apt/lists/*
