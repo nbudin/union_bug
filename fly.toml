@@ -1,0 +1,18 @@
+# fly.toml app configuration file generated for union-bug on 2023-09-12T10:11:49-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "union-bug"
+primary_region = "sea"
+
+[build]
+image = "ghcr.io/nbudin/union_bug"
+
+[http_service]
+auto_start_machines = true
+auto_stop_machines = true
+force_https = true
+internal_port = 3928
+min_machines_running = 0
+processes = ["app"]

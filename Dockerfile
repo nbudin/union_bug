@@ -1,4 +1,5 @@
-FROM --platform=${BUILDPLATFORM} node:bookworm-slim AS client-build
+FROM --platform=${BUILDPLATFORM} node:${NODE_VERSION}-bookworm-slim AS client-build
+ARG NODE_VERSION
 
 WORKDIR /work
 

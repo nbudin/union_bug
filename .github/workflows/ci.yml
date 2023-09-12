@@ -74,9 +74,9 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@master
-      - name: Read .ruby-version
-        id: ruby-version
-        run: echo "ruby-version=$(cat .ruby-version)" >> $GITHUB_OUTPUT
+      - name: Read .node-version
+        id: node-version
+        run: echo "node-version=$(cat .node-version)" >> $GITHUB_OUTPUT
       - name: Build (and push to registry, if on main)
         uses: docker/build-push-action@v4
         with:
@@ -86,7 +86,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:${{ github.sha }}
           build-args: |
-            RUBY_VERSION=${{ steps.ruby-version.outputs.ruby-version }}
+            NODE_VERSION=${{ steps.node-version.outputs.node-version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
