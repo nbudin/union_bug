@@ -356,17 +356,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7284148338177cb1cd0d0cdd7bf26440f8326999063eed294aa7d77b46a7e263"
 dependencies = [
- "dav1d-sys 0.3.5",
-]
-
-[[package]]
-name = "dav1d"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7eb1fa9954b7ae85ff0d43ef6d186d1b3469d4aa1574845d1938bef05377030"
-dependencies = [
- "bitflags 2.4.2",
- "dav1d-sys 0.8.2",
+ "dav1d-sys",
 ]
 
 [[package]]
@@ -380,20 +370,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "dav1d-sys"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ecb1c5e8f4dc438eedc1b534a54672fb0e0a56035dae6b50162787bd2c50e95"
-dependencies = [
- "libc",
- "system-deps",
-]
-
-[[package]]
 name = "dcv-color-primitives"
-version = "0.6.1"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07ad62edfed069700a5b33af6babd29c498d7e33eb01d96ffa8841ee1841634c"
+checksum = "1457f4dd8395fef9f61996b5783b82ed7b234b4b55e1843d04e07fded0538005"
 dependencies = [
  "paste",
  "wasm-bindgen",
@@ -602,9 +582,9 @@ dependencies = [
 
 [[package]]
 name = "gif"
-version = "0.13.1"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fb2d69b19215e18bb912fa30f7ce15846e301408695e44e0ef719f1da9e19f2"
+checksum = "80792593675e051cf94a4b111980da2ba60d4a83e43e0048c5693baab3977045"
 dependencies = [
  "color_quant",
  "weezl",
@@ -742,19 +722,20 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.24.9"
+version = "0.24.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5690139d2f55868e080017335e4b94cb7414274c74f1669c84fb5feba2c9f69d"
+checksum = "6f3dfdbdd72063086ff443e297b61695500514b1e41095b6fb9a5ab48a70a711"
 dependencies = [
  "bytemuck",
  "byteorder",
  "color_quant",
- "dav1d 0.10.2",
+ "dav1d",
  "dcv-color-primitives",
  "exr",
  "gif",
  "jpeg-decoder",
  "mp4parse",
+ "num-rational",
  "num-traits",
  "png",
  "qoi",
@@ -973,6 +954,26 @@ checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
 dependencies = [
  "overload",
  "winapi",
+]
+
+[[package]]
+name = "num-integer"
+version = "0.1.46"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0638a1c9d0a3c0914158145bc76cff373a75a627e6ecbfb71cbe6f453a5a19b0"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]
@@ -1628,7 +1629,6 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "axum-macros",
- "dav1d 0.6.1",
  "futures",
  "hyper",
  "image",
