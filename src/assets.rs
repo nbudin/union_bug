@@ -9,6 +9,9 @@ static AB1U_TOP_LEFT_TEMPLATE: Lazy<DynamicImage> = Lazy::new(|| {
 static ABTWU_TOP_LEFT_TEMPLATE: Lazy<DynamicImage> = Lazy::new(|| {
     image::load_from_memory(include_bytes!("../assets/abtwu_top_left_template.png")).unwrap()
 });
+static ABTWU_RED_TOP_LEFT_TEMPLATE: Lazy<DynamicImage> = Lazy::new(|| {
+    image::load_from_memory(include_bytes!("../assets/abtwu_red_top_left_template.png")).unwrap()
+});
 
 pub struct Overlay {
     pub key: &'static str,
@@ -22,6 +25,11 @@ pub static OVERLAYS: Lazy<Vec<Overlay>> = Lazy::new(|| {
             key: "abtwu-top-left-template",
             description: "ActBlue Tech Workers Union top left banner",
             image: &ABTWU_TOP_LEFT_TEMPLATE,
+        },
+        Overlay {
+            key: "abtwu-red-top-left-template",
+            description: "ActBlue Tech Workers Union red top left banner",
+            image: &ABTWU_RED_TOP_LEFT_TEMPLATE,
         },
         Overlay {
             key: "ab1u-top-left-template",
